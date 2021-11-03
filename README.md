@@ -1,0 +1,1 @@
+Just execute the python file in a terminal.
