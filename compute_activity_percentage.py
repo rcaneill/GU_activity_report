@@ -9,8 +9,9 @@ Licence: see attached LICENSE file.
 
 Versions:
 * 2021-11-03: v0.1, initial version
-  Romain Caneill
-    
+  by Romain Caneill
+* 2021-11-08: v0.2, fix number of days / year, add option for start/end date
+  by Romain Caneill
 """
 
 """
@@ -21,13 +22,42 @@ Versions:
      * http://www.wtfpl.net/ for more details. */
 """
 
+def str_to_float(var):
+    if var == '':
+        return 0
+    else:
+        return float(var)
+
 # Number of working hours per semester
-WORK_HOURS = 877.
 WORK_DAY_HOURS = 8. # hours
+WORK_HOURS = 260 * WORK_DAY_HOURS / 2
+
+# Start / end day
+print('Please enter the period: 1 for January=>June and 2 for July=>December:')
+period=float(input('period: '))
+
+print('')
+print('If you started in the middle of the period you are registering, '
+    'please enter your starting date. Else leave empty and hit Enter')
+start_date = input('Start date in format MM-DD: ')
+print('')
+print('Similarly, enter your ending date if you are ending in the middle '
+    'of the period you are registering')
+end_date = input('End date in format MM-DD: ')
+# We compute an approximate number of unemployed days
+if start_date == '':
+    unemployed = 0
+else:
+    [start_month, start_day_of_month] = [float(i) for i in start_date.split('-')]
+    unemployed = ((start_month - 1 - (period - 1)*6)*30.5 + start_day_of_month) * 5/7
+if end_date != '':
+    [end_month, end_day_of_month] = [float(i) for i in end_date.split('-')]
+    unemployed += ((7 - end_month + (period - 1)*6)*30.5 - end_day_of_month) * 5/7
+unemployed *= WORK_DAY_HOURS
 
 # Number of teaching hours and departmental duties
-teaching = float(input('Number of teaching hours: '))
-duties = float(input('Number of hours for other departmental duties: '))
+teaching = str_to_float(input('Number of teaching hours: '))
+duties = str_to_float(input('Number of hours for other departmental duties: '))
 
 # Number of sick leave, parental leave, etc
 print('')
@@ -52,10 +82,11 @@ while True:
     leave_hours += h
     log.append([days[0], days[1], h])
     
-tot_hours = teaching + duties + leave_hours
+tot_hours = teaching + duties + leave_hours + unemployed
 
 print('')
 print('*** Summary ***')
+print(f'{unemployed / WORK_DAY_HOURS} days of unemployment (due to start / end date)')
 print(f'{teaching} hours of teaching')
 print(f'{duties} hours of other duties')
 for i in log:
